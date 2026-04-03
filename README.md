@@ -17,8 +17,8 @@ FastAPI-based fintech API project
 - /wallet/add-funds - manually add money to an account (for testing purposes)
 
 **/transactions**
-/transactions/send
-/transactions/history
+- /transactions/send
+- /transactions/history
 
 ### Features
 - User registration
