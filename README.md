@@ -6,3 +6,4 @@ FastAPI-based fintech API project with:
 - Wallet creation
 - Database models with SQLAlchemy
 - Password hashing with bcrypt
+- Money transfer
