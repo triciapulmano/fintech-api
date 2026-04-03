@@ -1,19 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import Optional
 
-from app.database import SessionLocal, get_db
+from app.database import get_db
 from app.models import User, Transaction
 from app.auth import get_current_user
+from app.schemas import TransferRequest
 
-router = APIRouter(prefix="/transactions")
+router = APIRouter()
 
 @router.post("/send")
-def send_money(receiver_username: str, amount: float,
-               current_username: str = Depends(get_current_user),
+def send_money(request: TransferRequest,
+               current_username: User = Depends(get_current_user),
                db: Session = Depends(get_db)):
 
     sender = current_username
-    receiver = db.query(User).filter(User.username == receiver_username).first()
+    receiver = db.query(User).filter(User.username == request.receiver_username).first()
+    amount = request.amount
 
     if not receiver:
         raise HTTPException(status_code=404, detail="Receiver not found")
@@ -23,25 +26,34 @@ def send_money(receiver_username: str, amount: float,
         raise HTTPException(status_code=404, detail="Receiver wallet not found")
     if sender.wallet.balance < amount:
         raise HTTPException(status_code=400, detail="Insufficient balance")
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be greater than 0")
+    if sender.username == receiver:
+        raise HTTPException(status_code=400, detail="Cannot send to yourself")
 
     # Update balances
-    sender.wallet.balance -= amount
-    receiver.wallet.balance += amount
+    try:
+        sender.wallet.balance -= amount
+        receiver.wallet.balance += amount
 
-    # Save transaction
-    transaction = Transaction(
-        sender_id=sender.id, 
-        receiver_id=receiver.id, 
-        amount=amount
-        )
-    
-    db.add(transaction)
-    db.commit()
+        # Save transaction
+        transaction = Transaction(
+            sender_id=sender.id, 
+            receiver_id=receiver.id, 
+            amount=amount
+            )
+        
+        db.add(transaction)
+        db.commit()
 
-    return {"message": "Transfer successful"}
+        return {"message": "Transfer successful"}
+    except:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Transaction failed")
 
 @router.get("/history")
-def transaction_history(current_user: User = Depends(get_current_user),
+def transaction_history(type: Optional[str] = None,
+                        current_user: User = Depends(get_current_user),
                         db: Session = Depends(get_db)):
     
     transactions = db.query(Transaction).filter(
@@ -55,20 +67,24 @@ def transaction_history(current_user: User = Depends(get_current_user),
     for t in transactions:
         ts = t.timestamp.isoformat() if t.timestamp else None
         
+        if type not in (None, "sent", "received"):
+            raise HTTPException(status_code=400, detail="Invalid type")
         if t.sender_id == current_user.id:
-            history.append({
-                "type": "sent",
-                "to": t.receiver.username if t.receiver else "Deleted user",
-                "amount": t.amount,
-                "timestamp": ts
-            })
+            if type is None or type == "sent": 
+                history.append({
+                    "type": "sent",
+                    "to": t.receiver.username if t.receiver else "Deleted user",
+                    "amount": t.amount,
+                    "timestamp": ts
+                })
         else:
-            history.append({
-                "type": "received",
-                "from": t.sender.username if t.sender else "Deleted user",
-                "amount": t.amount,
-                "timestamp": ts
-            })
+            if type is None or type == "received": 
+                history.append({
+                    "type": "received",
+                    "from": t.sender.username if t.sender else "Deleted user",
+                    "amount": t.amount,
+                    "timestamp": ts
+                })
 
     history.sort(key=lambda x: x["timestamp"], reverse=True)
     return {"history": history}

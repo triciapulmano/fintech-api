@@ -7,3 +7,7 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
+
+class TransferRequest(BaseModel):
+    receiver_username: str
+    amount: float
