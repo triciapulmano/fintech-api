@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
+from datetime import datetime, timezone
 from app.database import Base
 
 class User(Base):
@@ -28,3 +29,7 @@ class Transaction(Base):
     sender_id = Column(Integer, ForeignKey("users.id"))
     receiver_id = Column(Integer, ForeignKey("users.id"))
     amount = Column(Float)
+    timestamp = Column(DateTime, default=datetime.now(timezone.utc))
+
+    sender = relationship("User", foreign_keys=[sender_id], lazy="joined")
+    receiver = relationship("User", foreign_keys=[receiver_id], lazy="joined")

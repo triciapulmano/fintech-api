@@ -1,4 +1,3 @@
-# app/routes/transaction.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -40,3 +39,36 @@ def send_money(receiver_username: str, amount: float,
     db.commit()
 
     return {"message": "Transfer successful"}
+
+@router.get("/history")
+def transaction_history(current_user: User = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    
+    transactions = db.query(Transaction).filter(
+        (Transaction.sender_id == current_user.id) | 
+        (Transaction.receiver_id == current_user.id)
+    ).all()
+    print(transactions)
+
+    history = []
+
+    for t in transactions:
+        ts = t.timestamp.isoformat() if t.timestamp else None
+        
+        if t.sender_id == current_user.id:
+            history.append({
+                "type": "sent",
+                "to": t.receiver.username if t.receiver else "Deleted user",
+                "amount": t.amount,
+                "timestamp": ts
+            })
+        else:
+            history.append({
+                "type": "received",
+                "from": t.sender.username if t.sender else "Deleted user",
+                "amount": t.amount,
+                "timestamp": ts
+            })
+
+    history.sort(key=lambda x: x["timestamp"], reverse=True)
+    return {"history": history}
