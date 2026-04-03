@@ -2,25 +2,25 @@
 
 FastAPI-based fintech API project
 
-## Tech Stack
+### Tech Stack
 - FastAPI
 - Python
 - SQLAlchemy
 
-## API Endpoints
+### API Endpoints
 **/users**
-/users/register
-/users/login
+- /users/register
+- /users/login
 
 **/wallet**
-/wallet
-/wallet/add-funds
+- /wallet
+- /wallet/add-funds - manually add money to an account (for testing purposes)
 
 **/transactions**
 /transactions/send
 /transactions/history
 
-## Features
+### Features
 - User registration
 - User authentication
 - Password hashing with bcrypt

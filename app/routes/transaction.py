@@ -28,7 +28,7 @@ def send_money(request: TransferRequest,
         raise HTTPException(status_code=400, detail="Insufficient balance")
     if amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be greater than 0")
-    if sender.username == receiver:
+    if sender.id == receiver.id:
         raise HTTPException(status_code=400, detail="Cannot send to yourself")
 
     # Update balances
