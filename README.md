@@ -11,6 +11,7 @@ FastAPI-based fintech API project
 **/users**
 - /users/register
 - /users/login
+- /users/me
 
 **/wallet**
 - /wallet
@@ -19,6 +20,7 @@ FastAPI-based fintech API project
 **/transactions**
 - /transactions/send
 - /transactions/history
+- /transactions/{transaction_id}
 
 ### Features
 - User registration
@@ -34,7 +36,7 @@ FastAPI-based fintech API project
 - Synced the 3 services using the Saga pattern (each step has a compensating rollback action)
 
 ### Possible Improvements
-- Security gaps: logout doesn't invalidate tokens, no refresh tokens, no HTTPS
+- Security gaps: logout doesn't invalidate tokens, no refresh tokens, no HTTPS, exposed internal endpoints
 - Lacking centralized logging/monitoring
 - Unused Redis cache
 - No support for currency conversion
