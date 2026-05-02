@@ -14,6 +14,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router.post("/register")
 def register(user: UserCreate, db: Session = Depends(get_db)):
+    print("HIT OLD MONOLITH REGISTER")
     print(f"Password: {user.password}, Length:{len(user.password)}")
     
     hashed_pw = pwd_context.hash(str(user.password)[:72])
