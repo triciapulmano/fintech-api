@@ -28,3 +28,13 @@ FastAPI-based fintech API project
 - Money transfer
 - Transactions history
 
+### Project History
+- Simulated API Gateway using Kong
+- Migrated from monolithic to microservices architecture
+- Synced the 3 services using the Saga pattern (each step has a compensating rollback action)
+
+### Possible Improvements
+- Security gaps: logout doesn't invalidate tokens, no refresh tokens, no HTTPS
+- Lacking centralized logging/monitoring
+- Unused Redis cache
+- No support for currency conversion
